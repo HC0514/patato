@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOENIGSEGG — Beyond Limits</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #050709;
+    --deep: #080A0E;
+    --panel: #0D1018;
+    --gold: #D4A017;
+    --gold-light: #F0BE3A;
+    --silver: #C8D0DC;
+    --silver-dim: #7A8494;
+    --white: #F0F2F5;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: linear-gradient(to bottom, rgba(5,7,9,0.95) 0%, transparent 100%);
+    backdrop-filter: blur(8px);
+  }
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem; font-weight: 700;
+    letter-spacing: 0.3em; color: var(--white);
+    text-decoration: none;
+  }
+  .logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--silver-dim); text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ── HERO ── */
+  #hero {
+    position: relative; height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; overflow: hidden;
+  }
+  .hero-canvas {
+    position: absolute; inset: 0; z-index: 0;
+  }
+  .hero-glow {
+    position: absolute; inset: 0; z-index: 1;
+    background: radial-gradient(ellipse 80% 60% at 50% 60%, rgba(212,160,23,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-content { position: relative; z-index: 2; }
+  .hero-eyebrow {
+    font-size: 0.7rem; letter-spacing: 0.5em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 1s 0.3s forwards;
+  }
+  .hero-title {
+    font-family: 'Orbitron', monospace; font-weight: 900;
+    font-size: clamp(3rem, 8vw, 7rem); line-height: 0.95;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--white) 0%, var(--silver) 40%, var(--gold-light) 70%, var(--white) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    opacity: 0; animation: fadeUp 1s 0.6s forwards;
+  }
+  .hero-sub {
+    margin-top: 1.5rem; font-size: 0.95rem; font-weight: 300;
+    color: var(--silver-dim); letter-spacing: 0.15em;
+    max-width: 500px;
+    opacity: 0; animation: fadeUp 1s 0.9s forwards;
+  }
+  .hero-cta {
+    margin-top: 3rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 1s 1.2s forwards;
+  }
+  .btn-gold {
+    padding: 0.85rem 2.5rem; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+    background: var(--gold); color: var(--black); font-weight: 600;
+    border: none; cursor: pointer;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: background 0.3s, transform 0.2s;
+  }
+  .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-outline {
+    padding: 0.85rem 2.5rem; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+    background: transparent; color: var(--silver); font-weight: 400;
+    border: 1px solid rgba(200,208,220,0.3); cursor: pointer;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: border-color 0.3s, color 0.3s, transform 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+  .hero-scroll {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeIn 1s 2s forwards;
+  }
+  .scroll-line {
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  .scroll-label { font-size: 0.6rem; letter-spacing: 0.3em; color: var(--silver-dim); }
+
+  /* ── STATS STRIP ── */
+  #stats {
+    background: var(--panel);
+    border-top: 1px solid rgba(212,160,23,0.2);
+    border-bottom: 1px solid rgba(212,160,23,0.2);
+    padding: 3rem 3rem;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  .stat-item {
+    text-align: center; padding: 1rem;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-number {
+    font-family: 'Orbitron', monospace; font-size: 2.8rem; font-weight: 700;
+    color: var(--gold); line-height: 1;
+  }
+  .stat-suffix { font-size: 1.4rem; color: var(--gold-light); }
+  .stat-label {
+    margin-top: 0.6rem; font-size: 0.7rem; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--silver-dim);
+  }
+
+  /* ── SECTION COMMON ── */
+  section { padding: 7rem 3rem; }
+  .section-eyebrow {
+    font-size: 0.65rem; letter-spacing: 0.5em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace; font-size: clamp(1.8rem, 3.5vw, 3rem);
+    font-weight: 700; line-height: 1.1;
+    background: linear-gradient(135deg, var(--white) 0%, var(--silver) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .section-body { color: var(--silver-dim); line-height: 1.8; font-weight: 300; }
+  .divider {
+    width: 60px; height: 2px;
+    background: linear-gradient(to right, var(--gold), transparent);
+    margin: 1.5rem 0;
+  }
+
+  /* ── ABOUT ── */
+  #about { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+  .about-text { }
+  .about-visual {
+    position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .crest-svg-wrap {
+    width: 320px; height: 320px; position: relative;
+  }
+  .crest-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1px solid rgba(212,160,23,0.15);
+    animation: rotateSlow 30s linear infinite;
+  }
+  .crest-ring-2 {
+    position: absolute; inset: 20px;
+    border-radius: 50%;
+    border: 1px dashed rgba(212,160,23,0.1);
+    animation: rotateSlow 20s linear infinite reverse;
+  }
+  .crest-core {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .founding-year {
+    position: absolute; bottom: -2rem; left: 50%; transform: translateX(-50%);
+    font-family: 'Orbitron', monospace; font-size: 0.65rem; letter-spacing: 0.3em;
+    color: var(--silver-dim); white-space: nowrap;
+  }
+
+  /* ── MODELS GRID ── */
+  #models { background: var(--panel); }
+  #models .inner { max-width: 1200px; margin: 0 auto; }
+  .models-header { margin-bottom: 4rem; }
+  .models-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; }
+  .model-card {
+    position: relative; overflow: hidden; cursor: pointer;
+    aspect-ratio: 4/3; background: var(--deep);
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+  }
+  .model-card:hover { transform: translateY(-6px); z-index: 2; }
+  .model-card:hover .card-overlay { opacity: 1; }
+  .model-card:hover .card-info { bottom: 0; }
+  .card-bg {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem; opacity: 0.06;
+    font-family: 'Orbitron', monospace; font-weight: 900;
+    color: var(--gold); user-select: none;
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  .model-card:hover .card-bg { opacity: 0.12; transform: scale(1.05); }
+  .card-schematic {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(212,160,23,0.04), rgba(212,160,23,0.02));
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .card-info {
+    position: absolute; bottom: -20px; left: 0; right: 0;
+    padding: 1.5rem 1.5rem 1.5rem;
+    background: linear-gradient(to top, rgba(5,7,9,0.97) 0%, rgba(5,7,9,0.7) 70%, transparent 100%);
+    transition: bottom 0.4s cubic-bezier(0.23,1,0.32,1);
+  }
+  .card-model-name {
+    font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700;
+    color: var(--white); letter-spacing: 0.1em;
+  }
+  .card-model-sub { font-size: 0.75rem; color: var(--silver-dim); margin-top: 0.25rem; }
+  .card-spec-row { display: flex; gap: 1.5rem; margin-top: 1rem; }
+  .card-spec { font-size: 0.7rem; color: var(--silver-dim); letter-spacing: 0.1em; }
+  .card-spec strong { display: block; font-family: 'Orbitron', monospace; font-size: 0.85rem; color: var(--gold); font-weight: 500; }
+  .card-badge {
+    position: absolute; top: 1rem; right: 1rem;
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid rgba(212,160,23,0.4); color: var(--gold);
+    background: rgba(212,160,23,0.06);
+  }
+
+  /* ── PHILOSOPHY ── */
+  #philosophy { max-width: 1200px; margin: 0 auto; }
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 4rem; }
+  .pillar {
+    padding: 3rem 2rem; background: var(--panel);
+    border-top: 2px solid transparent;
+    transition: border-color 0.4s, background 0.4s;
+    position: relative; overflow: hidden;
+  }
+  .pillar::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(to right, var(--gold), transparent);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .pillar:hover::before { opacity: 1; }
+  .pillar:hover { background: rgba(13,16,24,0.8); }
+  .pillar-number {
+    font-family: 'Orbitron', monospace; font-size: 3.5rem; font-weight: 900;
+    color: rgba(212,160,23,0.08); line-height: 1; margin-bottom: 1.5rem;
+  }
+  .pillar-title {
+    font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 0.15em; color: var(--white); margin-bottom: 1rem;
+  }
+  .pillar-text { font-size: 0.9rem; color: var(--silver-dim); line-height: 1.75; font-weight: 300; }
+
+  /* ── HERITAGE TIMELINE ── */
+  #heritage { background: var(--panel); }
+  #heritage .inner { max-width: 900px; margin: 0 auto; }
+  .timeline { position: relative; margin-top: 4rem; padding-left: 3rem; }
+  .timeline::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 1px; background: linear-gradient(to bottom, var(--gold), rgba(212,160,23,0.1));
+  }
+  .timeline-item { position: relative; margin-bottom: 3.5rem; }
+  .timeline-dot {
+    position: absolute; left: -3.4rem; top: 0.25rem;
+    width: 8px; height: 8px; background: var(--gold);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+  .timeline-year {
+    font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 500;
+    color: var(--gold); letter-spacing: 0.2em; margin-bottom: 0.5rem;
+  }
+  .timeline-event { font-size: 1rem; font-weight: 500; color: var(--white); margin-bottom: 0.4rem; }
+  .timeline-desc { font-size: 0.875rem; color: var(--silver-dim); line-height: 1.7; font-weight: 300; }
+
+  /* ── QUOTE ── */
+  #quote {
+    text-align: center; padding: 8rem 3rem;
+    position: relative; overflow: hidden;
+  }
+  .quote-bg-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    font-family: 'Orbitron', monospace; font-size: 20vw; font-weight: 900;
+    color: rgba(212,160,23,0.025); white-space: nowrap; user-select: none;
+    letter-spacing: -0.05em; pointer-events: none;
+  }
+  .quote-mark { font-family: 'Orbitron', monospace; font-size: 4rem; color: var(--gold); line-height: 0.5; display: block; margin-bottom: 1rem; }
+  .quote-text {
+    position: relative; z-index: 1;
+    font-size: clamp(1.3rem, 2.5vw, 2rem); font-weight: 300;
+    color: var(--white); max-width: 800px; margin: 0 auto;
+    line-height: 1.6; letter-spacing: 0.01em;
+  }
+  .quote-author {
+    margin-top: 2rem; font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--silver-dim);
+  }
+  .quote-author span { color: var(--gold); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 3rem; display: flex; align-items: center; justify-content: space-between;
+    background: var(--panel);
+  }
+  .footer-logo {
+    font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 0.3em; color: var(--silver-dim);
+  }
+  .footer-logo span { color: var(--gold); }
+  .footer-copy { font-size: 0.7rem; color: rgba(122,132,148,0.5); letter-spacing: 0.1em; }
+  .footer-tagline { font-size: 0.7rem; letter-spacing: 0.2em; color: var(--silver-dim); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes rotateSlow {
+    from { transform: rotate(0deg); } to { transform: rotate(360deg); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes countUp { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes lineGrow { from { scaleX: 0; } to { scaleX: 1; } }
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── SCANLINE ── */
+  .scanline-overlay {
+    position: fixed; inset: 0; z-index: 999; pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom, transparent 0px, transparent 2px,
+      rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+    );
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    #stats { grid-template-columns: repeat(2, 1fr); }
+    #about { grid-template-columns: 1fr; }
+    .models-grid { grid-template-columns: 1fr; }
+    .pillars { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scanline-overlay"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="#hero">K<span>Ö</span>NIGSEGG</a>
+  <ul class="nav-links">
+    <li><a href="#about">關於品牌</a></li>
+    <li><a href="#models">車款系列</a></li>
+    <li><a href="#philosophy">造車哲學</a></li>
+    <li><a href="#heritage">品牌歷史</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">瑞典 · Ängelholm · 1994</p>
+    <h1 class="hero-title">KOENIGSEGG</h1>
+    <p class="hero-sub">不是追逐極限 — 而是重新定義極限的所在</p>
+    <div class="hero-cta">
+      <button class="btn-gold" onclick="document.getElementById('models').scrollIntoView({behavior:'smooth'})">探索車款</button>
+      <button class="btn-outline" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">品牌故事</button>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span class="scroll-label">向下探索</span>
+  </div>
+</section>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="stat-item reveal">
+    <div class="stat-number"><span class="count" data-target="1700">0</span><span class="stat-suffix">+</span></div>
+    <div class="stat-label">最大馬力 (hp)</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-number"><span class="count" data-target="400">0</span><span class="stat-suffix">+</span></div>
+    <div class="stat-label">極速 (km/h)</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-number"><span class="count" data-target="30">0</span><span class="stat-suffix"></span></div>
+    <div class="stat-label">年以上製造歷史</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-number"><span class="count" data-target="5">0</span><span class="stat-suffix">+</span></div>
+    <div class="stat-label">世界速度紀錄</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section>
+  <div id="about">
+    <div class="about-text reveal">
+      <p class="section-eyebrow">關於品牌</p>
+      <h2 class="section-title">瘋狂的想法<br>認真的工程</h2>
+      <div class="divider"></div>
+      <p class="section-body" style="margin-bottom:1.5rem">
+        1994年，Christian von Koenigsegg 在年僅22歲時，於瑞典南部小城 Ängelholm 創立了這間超跑廠牌。他的夢想只有一個：打造世界上最快、最精緻的汽車。
+      </p>
+      <p class="section-body">
+        每一輛 Koenigsegg 都由一支極小規模的精英工程師與工匠手工完成，年產量不超過數十輛。每台車都是技術突破與藝術美學的結晶，承載著北歐冷靜的工程理性與火熱的速度野心。
+      </p>
+    </div>
+    <div class="about-visual reveal">
+      <div class="crest-svg-wrap">
+        <div class="crest-ring"></div>
+        <div class="crest-ring-2"></div>
+        <div class="crest-core">
+          <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Shield outline -->
+            <path d="M100 12 L172 45 L172 105 C172 148 138 178 100 192 C62 178 28 148 28 105 L28 45 Z" 
+                  fill="none" stroke="#D4A017" stroke-width="1.5" opacity="0.6"/>
+            <!-- Inner shield -->
+            <path d="M100 28 L158 56 L158 105 C158 140 130 164 100 176 C70 164 42 140 42 105 L42 56 Z" 
+                  fill="rgba(212,160,23,0.04)" stroke="rgba(212,160,23,0.2)" stroke-width="1"/>
+            <!-- Ghost (stylized) -->
+            <path d="M100 62 C86 62 75 73 75 87 L75 120 C75 120 80 115 85 120 C90 125 95 120 100 120 C105 120 110 125 115 120 C120 115 125 120 125 120 L125 87 C125 73 114 62 100 62 Z" 
+                  fill="rgba(212,160,23,0.08)" stroke="#D4A017" stroke-width="1.2" opacity="0.7"/>
+            <!-- Eyes -->
+            <circle cx="90" cy="86" r="4" fill="#D4A017" opacity="0.6"/>
+            <circle cx="110" cy="86" r="4" fill="#D4A017" opacity="0.6"/>
+            <!-- Crown dots -->
+            <circle cx="100" cy="48" r="2.5" fill="#D4A017" opacity="0.5"/>
+            <circle cx="88" cy="52" r="2" fill="#D4A017" opacity="0.4"/>
+            <circle cx="112" cy="52" r="2" fill="#D4A017" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="founding-year">EST. ÄNGELHOLM, SWEDEN · MCMXCIV</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODELS -->
+<section id="models">
+  <div class="inner">
+    <div class="models-header reveal">
+      <p class="section-eyebrow">車款系列</p>
+      <h2 class="section-title">每一輛都是傑作</h2>
+    </div>
+    <div class="models-grid">
+
+      <div class="model-card reveal">
+        <div class="card-bg">CC8S</div>
+        <div class="card-schematic">
+          <svg width="280" height="100" viewBox="0 0 280 100" fill="none">
+            <path d="M20 68 L40 68 L55 45 L100 38 L160 35 L210 40 L235 55 L255 68 L260 68" stroke="rgba(212,160,23,0.15)" stroke-width="1.5" fill="none"/>
+            <ellipse cx="65" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="65" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <ellipse cx="210" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="210" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <div class="card-model-name">CC8S</div>
+          <div class="card-model-sub">2002 · 首款量產車型</div>
+          <div class="card-spec-row">
+            <div class="card-spec"><strong>655</strong>馬力</div>
+            <div class="card-spec"><strong>388</strong>km/h</div>
+            <div class="card-spec"><strong>1,180</strong>kg</div>
+          </div>
+        </div>
+        <div class="card-badge">傳奇</div>
+      </div>
+
+      <div class="model-card reveal">
+        <div class="card-bg">AGERA</div>
+        <div class="card-schematic">
+          <svg width="280" height="100" viewBox="0 0 280 100" fill="none">
+            <path d="M15 68 L45 68 L65 42 L115 32 L165 30 L215 36 L240 52 L262 68 L265 68" stroke="rgba(212,160,23,0.15)" stroke-width="1.5" fill="none"/>
+            <ellipse cx="70" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="70" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <ellipse cx="215" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="215" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <line x1="140" y1="30" x2="140" y2="20" stroke="rgba(212,160,23,0.1)" stroke-width="1" stroke-dasharray="3,3"/>
+          </svg>
+        </div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <div class="card-model-name">AGERA RS</div>
+          <div class="card-model-sub">2011 · 世界最速紀錄保持者</div>
+          <div class="card-spec-row">
+            <div class="card-spec"><strong>1,160</strong>馬力</div>
+            <div class="card-spec"><strong>457</strong>km/h</div>
+            <div class="card-spec"><strong>1,395</strong>kg</div>
+          </div>
+        </div>
+        <div class="card-badge">紀錄</div>
+      </div>
+
+      <div class="model-card reveal">
+        <div class="card-bg">JESKO</div>
+        <div class="card-schematic">
+          <svg width="280" height="100" viewBox="0 0 280 100" fill="none">
+            <path d="M10 68 L38 68 L60 38 L120 26 L165 24 L220 32 L248 50 L268 68" stroke="rgba(212,160,23,0.15)" stroke-width="1.5" fill="none"/>
+            <ellipse cx="68" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="68" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <ellipse cx="218" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="218" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <path d="M140 24 L148 10 L152 15 L160 10 L155 24" stroke="rgba(212,160,23,0.12)" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <div class="card-model-name">JESKO ABSOLUT</div>
+          <div class="card-model-sub">2020 · 挑戰 500km/h</div>
+          <div class="card-spec-row">
+            <div class="card-spec"><strong>1,600</strong>馬力</div>
+            <div class="card-spec"><strong>500+</strong>km/h</div>
+            <div class="card-spec"><strong>1,320</strong>kg</div>
+          </div>
+        </div>
+        <div class="card-badge">旗艦</div>
+      </div>
+
+      <div class="model-card reveal">
+        <div class="card-bg">REGERA</div>
+        <div class="card-schematic">
+          <svg width="280" height="100" viewBox="0 0 280 100" fill="none">
+            <path d="M20 68 L50 68 L70 44 L125 33 L170 31 L220 38 L242 54 L258 68" stroke="rgba(212,160,23,0.15)" stroke-width="1.5" fill="none"/>
+            <ellipse cx="75" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="75" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <ellipse cx="218" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="218" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <circle cx="148" cy="34" r="6" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1" stroke-dasharray="2,2"/>
+          </svg>
+        </div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <div class="card-model-name">REGERA</div>
+          <div class="card-model-sub">2016 · 油電混合超跑</div>
+          <div class="card-spec-row">
+            <div class="card-spec"><strong>1,500</strong>馬力</div>
+            <div class="card-spec"><strong>410+</strong>km/h</div>
+            <div class="card-spec"><strong>1,628</strong>kg</div>
+          </div>
+        </div>
+        <div class="card-badge">電動</div>
+      </div>
+
+      <div class="model-card reveal">
+        <div class="card-bg">CCXR</div>
+        <div class="card-schematic">
+          <svg width="280" height="100" viewBox="0 0 280 100" fill="none">
+            <path d="M18 68 L42 68 L58 46 L105 36 L162 34 L214 41 L237 56 L256 68" stroke="rgba(212,160,23,0.15)" stroke-width="1.5" fill="none"/>
+            <ellipse cx="66" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="66" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <ellipse cx="212" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="212" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <div class="card-model-name">CCXR TREVITA</div>
+          <div class="card-model-sub">2009 · 鑽石碳纖維塗裝</div>
+          <div class="card-spec-row">
+            <div class="card-spec"><strong>1,018</strong>馬力</div>
+            <div class="card-spec"><strong>410</strong>km/h</div>
+            <div class="card-spec"><strong>1,290</strong>kg</div>
+          </div>
+        </div>
+        <div class="card-badge">稀世</div>
+      </div>
+
+      <div class="model-card reveal">
+        <div class="card-bg">GEMERA</div>
+        <div class="card-schematic">
+          <svg width="280" height="100" viewBox="0 0 280 100" fill="none">
+            <path d="M15 68 L44 68 L65 40 L122 28 L168 26 L224 34 L246 52 L265 68" stroke="rgba(212,160,23,0.15)" stroke-width="1.5" fill="none"/>
+            <ellipse cx="72" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="72" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <ellipse cx="220" cy="70" rx="16" ry="16" fill="none" stroke="rgba(212,160,23,0.2)" stroke-width="1.5"/>
+            <ellipse cx="220" cy="70" rx="8" ry="8" fill="none" stroke="rgba(212,160,23,0.15)" stroke-width="1"/>
+            <line x1="100" y1="28" x2="100" y2="58" stroke="rgba(212,160,23,0.08)" stroke-width="1" stroke-dasharray="2,4"/>
+            <line x1="175" y1="26" x2="175" y2="56" stroke="rgba(212,160,23,0.08)" stroke-width="1" stroke-dasharray="2,4"/>
+          </svg>
+        </div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <div class="card-model-name">GEMERA</div>
+          <div class="card-model-sub">2020 · 四座超跑</div>
+          <div class="card-spec-row">
+            <div class="card-spec"><strong>1,700</strong>馬力</div>
+            <div class="card-spec"><strong>400+</strong>km/h</div>
+            <div class="card-spec"><strong>4</strong>座位</div>
+          </div>
+        </div>
+        <div class="card-badge">創新</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PHILOSOPHY -->
+<section id="philosophy">
+  <div id="philosophy">
+    <div class="reveal">
+      <p class="section-eyebrow">造車哲學</p>
+      <h2 class="section-title">三個不妥協的信念</h2>
+    </div>
+    <div class="pillars">
+      <div class="pillar reveal">
+        <div class="pillar-number">01</div>
+        <div class="pillar-title">MEGACAR 概念</div>
+        <p class="pillar-text">Koenigsegg 拒絕「超跑」的定義，自創「Megacar」一詞。每輛車的馬力體重比必須突破所有既有紀錄，不是超越競爭對手，而是超越物理可能。</p>
+      </div>
+      <div class="pillar reveal">
+        <div class="pillar-number">02</div>
+        <div class="pillar-title">垂直整合生產</div>
+        <p class="pillar-text">從引擎到碳纖維車殼，從輪圈到排氣系統，Koenigsegg 堅持自行研發、製造所有核心零件。這種執念確保每個細節都達到無法妥協的精準度。</p>
+      </div>
+      <div class="pillar reveal">
+        <div class="pillar-number">03</div>
+        <div class="pillar-title">瑞典工程美學</div>
+        <p class="pillar-text">北歐設計崇尚功能即美學。Koenigsegg 的每條線條都服務於空氣動力學，每個開口都為冷卻而生，美麗從不是裝飾，而是工程的必然結果。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HERITAGE -->
+<section id="heritage">
+  <div class="inner">
+    <div class="reveal">
+      <p class="section-eyebrow">品牌歷史</p>
+      <h2 class="section-title">三十年的速度史詩</h2>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">1994</div>
+        <div class="timeline-event">夢想的起點</div>
+        <p class="timeline-desc">Christian von Koenigsegg 年僅22歲，在瑞典 Ängelholm 創立公司，立志打造一台能與世界最快超跑一較高下的瑞典跑車。</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2002</div>
+        <div class="timeline-event">CC8S — 第一輛量產車</div>
+        <p class="timeline-desc">耗時八年，Koenigsegg 推出首款量產車型 CC8S，搭載福特 V8 引擎改裝版，立即創下多項性能紀錄，震驚超跑界。</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2011</div>
+        <div class="timeline-event">Agera — 自製引擎時代開始</div>
+        <p class="timeline-desc">Koenigsegg 推出自行研發的 5.0L 雙渦輪增壓 V8 引擎，完全脫離對外部供應商的依賴，標誌著全新工程紀元的開始。</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2017</div>
+        <div class="timeline-event">Agera RS 打破世界速度紀錄</div>
+        <p class="timeline-desc">在美國內華達州的封閉公路上，Agera RS 以平均時速 447.19 km/h 成為當時世界上最快的量產車，打破布加迪多年保持的紀錄。</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2020</div>
+        <div class="timeline-event">Gemera — 重新定義可能性</div>
+        <p class="timeline-desc">四座、1700馬力、油電混合，Gemera 讓世界看見 Koenigsegg 不只追求速度，更在重新思考汽車的本質：家庭與極速，可以共存。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section id="quote">
+  <div class="quote-bg-text">SPEED</div>
+  <div class="reveal">
+    <span class="quote-mark">"</span>
+    <p class="quote-text">我們從不問「這能做到嗎」，我們只問「怎麼做到它」。如果物理定律允許，我們就一定會實現它。</p>
+    <p class="quote-author">— <span>Christian von Koenigsegg</span>，創辦人暨設計師</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">K<span>Ö</span>NIGSEGG</div>
+  <div class="footer-copy">© 2024 Koenigsegg Automotive AB · Ängelholm, Sweden</div>
+  <div class="footer-tagline">Beyond limits · Since 1994</div>
+</footer>
+
+<script>
+// ── HERO PARTICLE CANVAS ──
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.size = Math.random() * 1.5 + 0.3;
+    this.speedX = (Math.random() - 0.5) * 0.4;
+    this.speedY = (Math.random() - 0.5) * 0.4;
+    this.opacity = Math.random() * 0.5 + 0.1;
+    this.gold = Math.random() > 0.85;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.gold
+      ? `rgba(212,160,23,${this.opacity})`
+      : `rgba(200,208,220,${this.opacity * 0.5})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 160; i++) particles.push(new Particle());
+
+// Grid lines
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(212,160,23,0.025)';
+  ctx.lineWidth = 0.5;
+  const spacing = 80;
+  for (let x = 0; x < W; x += spacing) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += spacing) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+}
+
+// Animated scan line
+let scanY = 0;
+function drawScan() {
+  const grad = ctx.createLinearGradient(0, scanY - 60, 0, scanY + 60);
+  grad.addColorStop(0, 'transparent');
+  grad.addColorStop(0.5, 'rgba(212,160,23,0.04)');
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, scanY - 60, W, 120);
+  scanY = (scanY + 0.8) % (H + 120);
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  drawGrid();
+  drawScan();
+  particles.forEach(p => { p.update(); p.draw(); });
+  // draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 80) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(212,160,23,${0.06 * (1 - dist/80)})`;
+        ctx.lineWidth = 0.4;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ── SCROLL REVEAL ──
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.12 });
+reveals.forEach(el => observer.observe(el));
+
+// ── COUNT UP ──
+function countUp(el) {
+  const target = parseInt(el.dataset.target);
+  const duration = 1800;
+  const start = performance.now();
+  function step(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.floor(ease * target).toLocaleString();
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target.toLocaleString();
+  }
+  requestAnimationFrame(step);
+}
+
+const countObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.querySelectorAll('.count').forEach(countUp);
+      countObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('#stats').forEach(el => countObserver.observe(el));
+
+// ── PARALLAX ──
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const heroContent = document.querySelector('.hero-content');
+  if (heroContent) {
+    heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
+    heroContent.style.opacity = Math.max(0, 1 - scrolled / 600);
+  }
+});
+</script>
+</body>
+</html>
